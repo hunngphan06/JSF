@@ -11,6 +11,16 @@
     <h:form>
         <h:commandButton value="Thêm bài viết" action="createPost.xhtml?faces-redirect=true" />
     </h:form>
+    <h:form>
+        <h:panelGrid columns="2">
+            <h:outputLabel for="searchUsername" value="Nhập tên người dùng:" />
+            <h:inputText id="searchUsername" value="#{authController.searchUsername}" />
+
+            <h:commandButton value="Tìm kiếm" action="#{authController.searchUser}" />
+        </h:panelGrid>
+    </h:form>
+
+    <h:messages />
 
     <h2>Danh sách bài viết</h2>
     <h:dataTable value="#{postController.allPosts}" var="post" border="1">

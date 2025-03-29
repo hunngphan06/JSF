@@ -53,6 +53,26 @@ public class AuthController implements Serializable {
         FacesContext.getCurrentInstance().getExternalContext().invalidateSession();
         return "login?faces-redirect=true"; // Chuyển về trang đăng nhập
     }
+    private String searchUsername;
+    private String searchResult;
 
+    public String getSearchUsername() { return searchUsername; }
+    public void setSearchUsername(String searchUsername) { this.searchUsername = searchUsername; }
+
+    public String getSearchResult() { return searchResult; }
+
+    public void searchUser() {
+//        searchResult = userDAO.searchUser(searchUsername);
+//        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(searchResult));
+        int postCount = userDAO.getUserPostCount(searchUsername);
+        boolean userStatus = userDAO.checkUserExists(searchUsername);
+
+        if (userStatus == false) {
+            searchResult = "Không tìm thấy người dùng";
+        } else if(userStatus == true && postCount >= 0) {
+            searchResult = "Người dùng " + searchUsername + " có " + postCount + " bài viết";
+        }
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(searchResult));
+    }
 
 }

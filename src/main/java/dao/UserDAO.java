@@ -24,6 +24,39 @@ public class UserDAO {
         }
         return false;
     }
+    public String searchUser(String username) {
+        String sql = "SELECT u.username, COUNT(p.id) AS post_count " +
+                "FROM users u LEFT JOIN posts p ON u.id = p.user_id " +
+                "WHERE u.username = ? GROUP BY u.id";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                int postCount = rs.getInt("post_count");
+                return "Người dùng " + username + " có " + postCount + " bài viết.";
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "Không tìm thấy người dùng";
+    }
+
+    public int getUserPostCount(String username) {
+        String sql = "SELECT COUNT(*) FROM posts p JOIN users u ON p.user_id = u.id WHERE u.username = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1); // Lấy số bài viết
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0; // Trả về 0 nếu không có bài viết
+    }
+
 
     public boolean registerUser(String username, String password) {
         String sql = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
@@ -50,6 +83,7 @@ public class UserDAO {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 user = new User();
+                user.setId(rs.getLong("id"));
                 user.setUsername(rs.getString("username"));
                 user.setPassword(rs.getString("password"));
                 user.setRole(rs.getString("role"));

@@ -1,7 +1,10 @@
 package controller;
 
-import dao.PostDAO;
+
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
 import model.Post;
+import model.User;
 import utils.DatabaseConnection;
 
 import jakarta.inject.Named;
@@ -17,20 +20,44 @@ public class PostController implements Serializable {
     private Post post = new Post();
 
     public String savePost() {
+//        try (Connection conn = DatabaseConnection.getConnection()) {
+//            PreparedStatement stmt = conn.prepareStatement(
+//                    "INSERT INTO posts (title, body, user_id, status, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)",
+//                    Statement.RETURN_GENERATED_KEYS
+//            );
+//
+//            // Đảm bảo status không null
+//            if (post.getStatus() == null || post.getStatus().trim().isEmpty()) {
+//                post.setStatus("PUBLISHED"); // Giá trị mặc định
+//            }
+//
+//            stmt.setString(1, post.getTitle());
+//            stmt.setString(2, post.getBody());
+//            stmt.setString(3, post.getStatus()); // Chỉ còn 3 tham số
+//
+//            stmt.executeUpdate();
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//            return null;
+//        }
+//
+//        return "dashboard.xhtml?faces-redirect=true"; // Quay lại dashboard
         try (Connection conn = DatabaseConnection.getConnection()) {
-            PreparedStatement stmt = conn.prepareStatement(
-                    "INSERT INTO posts (title, body, status, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)",
-                    Statement.RETURN_GENERATED_KEYS
-            );
+            User loggedInUser = (User) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("loggedInUser");
 
-            // Đảm bảo status không null
-            if (post.getStatus() == null || post.getStatus().trim().isEmpty()) {
-                post.setStatus("PUBLISHED"); // Giá trị mặc định
+            if (loggedInUser == null) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Lỗi", "Bạn phải đăng nhập để đăng bài!"));
+                return null; // Không lưu bài viết nếu chưa đăng nhập
             }
+
+            PreparedStatement stmt = conn.prepareStatement(
+                    "INSERT INTO posts (title, body, user_id, status, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)"
+            );
 
             stmt.setString(1, post.getTitle());
             stmt.setString(2, post.getBody());
-            stmt.setString(3, post.getStatus()); // Chỉ còn 3 tham số
+            stmt.setLong(3, loggedInUser.getId()); // Lấy user_id từ session
+            stmt.setString(4, post.getStatus() != null ? post.getStatus() : "PUBLISHED");
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -38,7 +65,7 @@ public class PostController implements Serializable {
             return null;
         }
 
-        return "dashboard.xhtml?faces-redirect=true"; // Quay lại dashboard
+        return "dashboard.xhtml?faces-redirect=true";
     }
 
     public List<Post> getAllPosts() {
