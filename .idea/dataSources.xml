@@ -4,7 +4,7 @@
     <data-source source="LOCAL" name="qlbvvnd@localhost" uuid="81ab1acb-79a5-4f55-ad0e-73967a54e028">
       <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
-      <remarks>Local instance wampmysqld64</remarks>
+      <remarks>Local instance MySQL80</remarks>
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
       <jdbc-url>jdbc:mysql://localhost:3306/qlbvvnd</jdbc-url>
       <jdbc-additional-properties>
